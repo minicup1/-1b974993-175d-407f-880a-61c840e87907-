@@ -157,7 +157,98 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
+	["Encode with Base64"] = function(obj)
+		local code = obj.Source
 	
+		local function encodeBase64(data)
+			local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+			local function toBase64(num)
+				return b:sub(num+1, num+1)
+			end
+			return ((data:gsub('.', function(x)
+				local r, b = '', x:byte()
+				for i = 8, 1, -1 do
+					r = r .. (b % 2^i - b % 2^(i-1) > 0 and '1' or '0')
+				end
+				return r
+			end):gsub('%d%d%d? %d%d%d? %d%d%d? %d%d%d?', function(x)
+				local c = 0
+				for i = 1, #x do
+					c = c + (x:sub(i, i) == '1' and 2^(8-(i%8)) or 0)
+				end
+				return toBase64(c)
+			end) .. ({ '', '==', '=' })[#data % 3 + 1])
+		end
+	
+		local encodedCode = encodeBase64(code)
+	
+		return encodedCode
+	end,
+	
+	["String Obfuscation"] = function(obj)
+		local code = obj.Source
+	
+		local function obfuscateString(str)
+			return (str:gsub(".", function(c)
+				return string.char(((c:byte() + 3) % 256))
+			end))
+		end
+	
+		local function deobfuscateString(str)
+			return (str:gsub(".", function(c)
+				return string.char(((c:byte() - 3) % 256))
+			end))
+		end
+	
+		local obfuscatedCode = obfuscateString(code)
+	
+		return obfuscatedCode
+	end,
+	
+	["Character Replacement"] = function(obj)
+		local code = obj.Source
+	
+		local function replaceChars(str)
+			return str:gsub('.', function(c)
+				return string.char(c:byte() + 128)
+			end)
+		end
+	
+		local function restoreChars(str)
+			return str:gsub('.', function(c)
+				return string.char(c:byte() - 128)
+			end)
+		end
+	
+		local replacedCode = replaceChars(code)
+	
+		return replacedCode
+	end,
+	
+	["String Splitting"] = function(obj)
+		local code = obj.Source
+	
+		local function splitString(str)
+			local chunks = {}
+			for i = 1, #str, 5 do
+				table.insert(chunks, str:sub(i, i + 4))
+			end
+			return chunks
+		end
+	
+		local function joinChunks(chunks)
+			return table.concat(chunks)
+		end
+	
+		local function obfuscateChunks(chunks)
+			return table.concat(chunks, string.char(math.random(1, 255)))
+		end
+	
+		local chunks = splitString(code)
+		local obfuscatedCode = obfuscateChunks(chunks)
+	
+		return obfuscatedCode
+	end,
 }
 
 return commands
