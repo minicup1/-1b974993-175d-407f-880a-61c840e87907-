@@ -176,20 +176,6 @@ local commands = {
 		local code = obj.Source
 		return encryptCode(code)
 	end,
-	["String Concatenation"] = function(obj)
-		local function concatenateStrings(code)
-			return code:gsub('"[^"]+"', function(str)
-				local parts = {}
-				for part in str:gmatch('".-"') do
-					table.insert(parts, part)
-				end
-				return table.concat(parts, " .. ")
-			end)
-		end
-
-		local code = obj.Source
-		return concatenateStrings(code)
-	end,
 	["Loadstring Obfuscation"] = function(obj)
 		local function obfuscateWithLoadstring(code)
 			return "return loadstring(" .. string.format("%q", code) .. ")()"
@@ -198,13 +184,41 @@ local commands = {
 		local code = obj.Source
 		return obfuscateWithLoadstring(code)
 	end,
-	["Insert Dummy Code"] = function(obj)
-		local function insertDummyCode(code)
-			return code .. "\nlocal dummy = function() end"
-		end
+	["Dynamic Function Creation"] = function(obj)
+  		local function dynamicFunctions(code)
+        		return code:gsub('function%s+(%w+)', function(funcName)
+            			return 'local ' .. funcName .. ' = function() end'
+        		end)
+   		end
 
-		local code = obj.Source
-		return insertDummyCode(code)
+    		local code = obj.Source
+		return dynamicFunctions(code)
+	end,
+	["Function Wrapping"] = function(obj)
+	    local function wrapFunctions(code)
+	        return code:gsub('function%s+(%w+)', function(funcName)
+	            return 'function wrapper_' .. funcName .. '() return ' .. funcName .. ' end'
+	        end)
+	    end
+	
+	    local code = obj.Source
+	    return wrapFunctions(code)
+	end,
+	["Table-based Lookups"] = function(obj)
+	    local function obfuscateLookups(code)
+	        return code:gsub('"%w+"', function(str)
+	            return 'lookupTable["' .. str:sub(2, -2) .. '"]'
+	        end)
+	    end
+	
+	    local code = obj.Source
+	    local lookupTable = {
+	        ["print"] = "func1",
+	        ["local"] = "func2",
+	        -- Add more mappings as needed
+	    }
+	    
+	    return "local lookupTable = " .. table.concat(lookupTable, ", ") .. "\n" .. obfuscateLookups(code)
 	end,
 }
 
