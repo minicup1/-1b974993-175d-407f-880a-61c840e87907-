@@ -157,6 +157,55 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
+	["Encrypt Strings"] = function(obj)
+		local function xorEncryptDecrypt(input, key)
+			local output = {}
+			for i = 1, #input do
+				output[i] = string.char(string.byte(input, i))
+			end
+			return table.concat(output)
+		end
+
+		local function encryptCode(code)
+			local key = 0x42  -- Simple XOR key
+			return code:gsub("[%w_]+", function(word)
+				return xorEncryptDecrypt(word, key)
+			end)
+		end
+
+		local code = obj.Source
+		return encryptCode(code)
+	end,
+	["String Concatenation"] = function(obj)
+		local function concatenateStrings(code)
+			return code:gsub('"[^"]+"', function(str)
+				local parts = {}
+				for part in str:gmatch('".-"') do
+					table.insert(parts, part)
+				end
+				return table.concat(parts, " .. ")
+			end)
+		end
+
+		local code = obj.Source
+		return concatenateStrings(code)
+	end,
+	["Loadstring Obfuscation"] = function(obj)
+		local function obfuscateWithLoadstring(code)
+			return "return loadstring(" .. string.format("%q", code) .. ")()"
+		end
+
+		local code = obj.Source
+		return obfuscateWithLoadstring(code)
+	end,
+	["Insert Dummy Code"] = function(obj)
+		local function insertDummyCode(code)
+			return code .. "\nlocal dummy = function() end"
+		end
+
+		local code = obj.Source
+		return insertDummyCode(code)
+	end,
 }
 
 return commands
