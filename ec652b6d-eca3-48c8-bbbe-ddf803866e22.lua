@@ -157,25 +157,6 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Encrypt Strings"] = function(obj)
-		local function xorEncryptDecrypt(input, key)
-			local output = {}
-			for i = 1, #input do
-				output[i] = string.char(string.byte(input, i))
-			end
-			return table.concat(output)
-		end
-
-		local function encryptCode(code)
-			local key = 0x42  -- Simple XOR key
-			return code:gsub("[%w_]+", function(word)
-				return xorEncryptDecrypt(word, key)
-			end)
-		end
-
-		local code = obj.Source
-		return encryptCode(code)
-	end,
 	["Loadstring Obfuscation"] = function(obj)
 		local function obfuscateWithLoadstring(code)
 			return "return loadstring(" .. string.format("%q", code) .. ")()"
@@ -184,41 +165,61 @@ local commands = {
 		local code = obj.Source
 		return obfuscateWithLoadstring(code)
 	end,
-	["Dynamic Function Creation"] = function(obj)
-  		local function dynamicFunctions(code)
-        		return code:gsub('function%s+(%w+)', function(funcName)
-            			return 'local ' .. funcName .. ' = function() end'
-        		end)
-   		end
-
-    		local code = obj.Source
-		return dynamicFunctions(code)
-	end,
-	["Function Wrapping"] = function(obj)
-	    local function wrapFunctions(code)
-	        return code:gsub('function%s+(%w+)', function(funcName)
-	            return 'function wrapper_' .. funcName .. '() return ' .. funcName .. ' end'
+	["Overloading Tables"] = function(obj)
+	    local function overloadTables(code)
+	        local funcTable = {
+	            ["originalFunction1"] = function() return "Obfuscated Function 1" end,
+	            ["originalFunction2"] = function() return "Obfuscated Function 2" end,
+	        }
+	        return code:gsub("originalFunction[%d]", function(funcName)
+	            return 'funcTable["' .. funcName .. '"]()'
 	        end)
 	    end
 	
 	    local code = obj.Source
-	    return wrapFunctions(code)
+	    return overloadTables(code)
 	end,
-	["Table-based Lookups"] = function(obj)
-	    local function obfuscateLookups(code)
-	        return code:gsub('"%w+"', function(str)
-	            return 'lookupTable["' .. str:sub(2, -2) .. '"]'
+	["Mixed Language Encoding"] = function(obj)
+	    local function toBase64(str)
+	        local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+	        return ((str:gsub('.', function(x)
+	            local r, b = '', x:byte()
+	            for i = 8, 1, -1 do
+	                r = r .. (b % 2^i - b % 2^(i-1) > 0 and '1' or '0')
+	                b = b - b % 2^(i-1)
+	            end
+	            return r
+	        end):gsub('......', function(x)
+	            local c = 0
+	            for i = 1, 6 do
+	                c = c * 2 + (x:sub(i, i) == '1' and 1 or 0)
+	            end
+	            return b:sub(c+1, c+1)
+	        end) .. (''):rep((3 - #str % 3) % 3), '=%d$')
+	    end
+	
+	    local function encodeWithBase64(code)
+	        return "local encodedCode = '" .. toBase64(code) .. "'"
+	    end
+	
+	    local code = obj.Source
+	    return encodeWithBase64(code)
+	end,
+	["Variable Encoding"] = function(obj)
+	    local function encode(str)
+	        return (str:gsub('.', function(c)
+	            return string.format('%%%02X', string.byte(c))
+	        end))
+	    end
+	
+	    local function encodeVariables(code)
+	        return code:gsub('(%w+)', function(var)
+	            return encode(var)
 	        end)
 	    end
 	
 	    local code = obj.Source
-	    local lookupTable = {
-	        ["print"] = "func1",
-	        ["local"] = "func2",
-	        -- Add more mappings as needed
-	    }
-	    
-	    return "local lookupTable = " .. table.concat(lookupTable, ", ") .. "\n" .. obfuscateLookups(code)
+	    return encodeVariables(code)
 	end,
 }
 
