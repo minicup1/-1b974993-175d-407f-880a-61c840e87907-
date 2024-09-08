@@ -195,22 +195,6 @@ local commands = {
 	    local code = obj.Source
 	    return inlineAssembly(code)
 	end,
-	["Variable Encoding"] = function(obj)
-	    local function encode(str)
-	        return (str:gsub('.', function(c)
-	            return string.format('%%%02X', string.byte(c))
-	        end))
-	    end
-	
-	    local function encodeVariables(code)
-	        return code:gsub('(%w+)', function(var)
-	            return encode(var)
-	        end)
-	    end
-	
-	    local code = obj.Source
-	    return encodeVariables(code)
-	end,
 }
 
 return commands
