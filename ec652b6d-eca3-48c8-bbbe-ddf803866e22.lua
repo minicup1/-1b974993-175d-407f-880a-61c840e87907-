@@ -159,29 +159,34 @@ local commands = {
 	end,
 	["Encode with Base64"] = function(obj)
 		local code = obj.Source
-	
+		
 		local function encodeBase64(data)
 			local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 			local function toBase64(num)
 				return b:sub(num+1, num+1)
 			end
-			return ((data:gsub('.', function(x)
-				local r, b = '', x:byte()
-				for i = 8, 1, -1 do
-					r = r .. (b % 2^i - b % 2^(i-1) > 0 and '1' or '0')
-				end
-				return r
-			end):gsub('%d%d%d? %d%d%d? %d%d%d? %d%d%d?', function(x)
-				local c = 0
-				for i = 1, #x do
-					c = c + (x:sub(i, i) == '1' and 2^(8-(i%8)) or 0)
-				end
-				return toBase64(c)
-			end) .. ({ '', '==', '=' })[#data % 3 + 1])
+			local encoded = ""
+			local padding = ""
+			local i = 1
+			while i <= #data do
+				local b1 = data:byte(i)
+				local b2 = data:byte(i+1)
+				local b3 = data:byte(i+2)
+				i = i + 3
+				
+				local v = (b1 or 0) * 256 * 256 + (b2 or 0) * 256 + (b3 or 0)
+				local c1 = math.floor(v / (64 * 64))
+				local c2 = math.floor((v % (64 * 64)) / 64)
+				local c3 = v % 64
+				
+				encoded = encoded .. toBase64(c1) .. toBase64(c2) .. toBase64(c3) .. (b3 and "" or (b2 and "=" or "=="))
+			end
+			
+			return encoded
 		end
-	
+		
 		local encodedCode = encodeBase64(code)
-	
+		
 		return encodedCode
 	end,
 	["String Obfuscation"] = function(obj)
