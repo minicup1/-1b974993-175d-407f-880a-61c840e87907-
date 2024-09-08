@@ -157,100 +157,32 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Encode with Base64"] = function(obj)
-		local code = obj.Source
-		
-		local function encodeBase64(data)
-			local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-			local function toBase64(num)
-				return b:sub(num+1, num+1)
-			end
-			local encoded = ""
-			local padding = ""
-			local i = 1
-			while i <= #data do
-				local b1 = data:byte(i)
-				local b2 = data:byte(i+1)
-				local b3 = data:byte(i+2)
-				i = i + 3
-				
-				local v = (b1 or 0) * 256 * 256 + (b2 or 0) * 256 + (b3 or 0)
-				local c1 = math.floor(v / (64 * 64))
-				local c2 = math.floor((v % (64 * 64)) / 64)
-				local c3 = v % 64
-				
-				encoded = encoded .. toBase64(c1) .. toBase64(c2) .. toBase64(c3) .. (b3 and "" or (b2 and "=" or "=="))
-			end
-			
-			return encoded
-		end
-		
-		local encodedCode = encodeBase64(code)
-		
-		return encodedCode
-	end,
-	["String Obfuscation"] = function(obj)
-		local code = obj.Source
+	["ObscureCode"] = function(obj)
+	    local code = obj.Source
 	
-		local function obfuscateString(str)
-			return (str:gsub(".", function(c)
-				return string.char(((c:byte() + 3) % 256))
-			end))
-		end
+	    local function obscureString(s)
+	        local obscureTable = {
+	            ["a"] = "x", ["b"] = "y", ["c"] = "z", ["d"] = "a", ["e"] = "b",
+	            ["f"] = "c", ["g"] = "d", ["h"] = "e", ["i"] = "f", ["j"] = "g",
+	            ["k"] = "h", ["l"] = "i", ["m"] = "j", ["n"] = "k", ["o"] = "l",
+	            ["p"] = "m", ["q"] = "n", ["r"] = "o", ["s"] = "p", ["t"] = "q",
+	            ["u"] = "r", ["v"] = "s", ["w"] = "t", ["x"] = "u", ["y"] = "v",
+	            ["z"] = "w", [" "] = " ", ["\n"] = "\n", ["\t"] = "\t"
+	        }
 	
-		local function deobfuscateString(str)
-			return (str:gsub(".", function(c)
-				return string.char(((c:byte() - 3) % 256))
-			end))
-		end
+	        local result = ""
+	        for i = 1, #s do
+	            local char = s:sub(i, i)
+	            result = result .. (obscureTable[char] or char)
+	        end
+	        return result
+	    end
 	
-		local obfuscatedCode = obfuscateString(code)
+	    -- Obscure the code
+	    local obscuredCode = obscureString(code)
 	
-		return obfuscatedCode
-	end,
-	["Character Replacement"] = function(obj)
-		local code = obj.Source
-	
-		local function replaceChars(str)
-			return str:gsub('.', function(c)
-				return string.char(c:byte() + 128)
-			end)
-		end
-	
-		local function restoreChars(str)
-			return str:gsub('.', function(c)
-				return string.char(c:byte() - 128)
-			end)
-		end
-	
-		local replacedCode = replaceChars(code)
-	
-		return replacedCode
-	end,
-	["String Splitting"] = function(obj)
-		local code = obj.Source
-	
-		local function splitString(str)
-			local chunks = {}
-			for i = 1, #str, 5 do
-				table.insert(chunks, str:sub(i, i + 4))
-			end
-			return chunks
-		end
-	
-		local function joinChunks(chunks)
-			return table.concat(chunks)
-		end
-	
-		local function obfuscateChunks(chunks)
-			return table.concat(chunks, string.char(math.random(1, 255)))
-		end
-	
-		local chunks = splitString(code)
-		local obfuscatedCode = obfuscateChunks(chunks)
-	
-		return obfuscatedCode
-	end,
+	    return obscuredCode
+	end
 }
 
 return commands
