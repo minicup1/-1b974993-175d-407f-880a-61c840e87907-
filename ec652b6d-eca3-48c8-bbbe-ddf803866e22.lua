@@ -179,31 +179,21 @@ local commands = {
 	    local code = obj.Source
 	    return overloadTables(code)
 	end,
-	["Mixed Language Encoding"] = function(obj)
-	    local function toBase64(str)
-	        local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-	        return ((str:gsub('.', function(x)
-	            local r, b = '', x:byte()
-	            for i = 8, 1, -1 do
-	                r = r .. (b % 2^i - b % 2^(i-1) > 0 and '1' or '0')
-	                b = b - b % 2^(i-1)
-	            end
-	            return r
-	        end):gsub('......', function(x)
-	            local c = 0
-	            for i = 1, 6 do
-	                c = c * 2 + (x:sub(i, i) == '1' and 1 or 0)
-	            end
-	            return b:sub(c+1, c+1)
-	        end) .. (''):rep((3 - #str % 3) % 3), '=%d$')
-	    end
-	
-	    local function encodeWithBase64(code)
-	        return "local encodedCode = '" .. toBase64(code) .. "'"
+	["Non-standard Libraries"] = function(obj)
+	    local function useCustomLibs(code)
+	        return "local myLib = {}" .. code:gsub("print", "myLib.customPrint")
 	    end
 	
 	    local code = obj.Source
-	    return encodeWithBase64(code)
+	    return useCustomLibs(code)
+	end,
+	["Inline Assembly"] = function(obj)
+	    local function inlineAssembly(code)
+	        return "local function asm() " .. code .. " end asm()"
+	    end
+	
+	    local code = obj.Source
+	    return inlineAssembly(code)
 	end,
 	["Variable Encoding"] = function(obj)
 	    local function encode(str)
