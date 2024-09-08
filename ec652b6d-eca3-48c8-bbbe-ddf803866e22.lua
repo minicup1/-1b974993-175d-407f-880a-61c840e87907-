@@ -157,62 +157,97 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Complex Nested Metatables"] = function(obj)
-	    local function obfuscateWithNestedMetatables(code)
-	        return "local mt1 = {__index = function(t, k) return function() return 'Layer 1' end end}\n" ..
-	               "local mt2 = {__index = function(t, k) return setmetatable({}, mt1) end}\n" ..
-	               "local mt3 = {__index = function(t, k) return setmetatable({}, mt2) end}\n" ..
-	               "local t = setmetatable({}, mt3)\n" ..
-	               "local function complexFunction() " .. code .. " end\n" ..
-	               "t[1] = complexFunction\n" ..
-	               "t[1]()"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithNestedMetatables(code)
-	end,
-	["Dynamic Code Generation with Obfuscated Templates"] = function(obj)
-	    local function generateObfuscatedCode(code)
-	        local functionTemplate = "local function generatedFunction() %s end\n" ..
-	                                 "local function executor() return generatedFunction() end\n" ..
-	                                 "executor()"
-	        return string.format(functionTemplate, code)
-	    end
-	
-	    local code = obj.Source
-	    return "local codeTemplate = [[\n" .. generateObfuscatedCode(code) .. "\n]]\n" ..
-	           "loadstring(codeTemplate)()"
-	end,
-	["Custom Encryption/Decryption"] = function(obj)
-	    local function customEncrypt(code)
-	        local key = 11
+	["Encrypted Code with Advanced Decryption"] = function(obj)
+	    local function encryptCode(code, key)
 	        return (code:gsub('.', function(c)
 	            return string.char(((string.byte(c) - 32 + key) % 95) + 32)
 	        end))
 	    end
 	
-	    local function customDecrypt(encryptedCode)
-	        local key = 11
+	    local function decryptCode(encryptedCode, key)
 	        return (encryptedCode:gsub('.', function(c)
 	            return string.char(((string.byte(c) - 32 - key + 95) % 95) + 32)
 	        end))
 	    end
 	
-	    local function obfuscateWithCustomEncryption(code)
-	        local encryptedCode = customEncrypt(code)
-	        return "local function decrypt(enc)\n" ..
-	               "    local key = 11\n" ..
-	               "    return (enc:gsub('.', function(c)\n" ..
-	               "        return string.char(((string.byte(c) - 32 - key + 95) % 95) + 32)\n" ..
-	               "    end))\n" ..
-	               "end\n" ..
-	               "local encryptedCode = [[" .. encryptedCode .. "]]\n" ..
-	               "local decryptedCode = decrypt(encryptedCode)\n" ..
-	               "loadstring(decryptedCode)()"
+	    local encryptedCode = encryptCode([[
+	        -- Encrypted Game Logic
+	        local mt1 = {__index = function(t, k) return function() return 'Layer 1' end end}
+	        local mt2 = {__index = function(t, k) return setmetatable({}, mt1) end}
+	        local mt3 = {__index = function(t, k) return setmetatable({}, mt2) end}
+	        local t = setmetatable({}, mt3)
+	        local function complexFunction() 
+	            -- Main game logic here
+	        end
+	        t[1] = complexFunction
+	        t[1]()
+	    ]], 13)
+	
+	    local function obfuscateDecryption()
+	        local function runDecryption()
+	            local key = 13
+	            local decryptedCode = decryptCode(encryptedCode, key)
+	            loadstring(decryptedCode)()
+	        end
+	
+	        local obfuscatedDecryption = "local function hiddenDecryption()\n" ..
+	                                     "    local function innerDecrypt()\n" ..
+	                                     "        local key = 13\n" ..
+	                                     "        local decryptedCode = decryptCode(encryptedCode, key)\n" ..
+	                                     "        loadstring(decryptedCode)()\n" ..
+	                                     "    end\n" ..
+	                                     "    innerDecrypt()\n" ..
+	                                     "end\n" ..
+	                                     "hiddenDecryption()"
+	        return obfuscatedDecryption
+	    end
+	
+	    return obfuscateDecryption()
+	end,
+	["Code Fragmentation"] = function(obj)
+	    local function fragmentCode(code)
+	        local fragments = {
+	            "local mt1 = {__index = function(t, k) return function() return 'Layer 1' end end}",
+	            "local mt2 = {__index = function(t, k) return setmetatable({}, mt1) end}",
+	            "local mt3 = {__index = function(t, k) return setmetatable({}, mt2) end}",
+	            "local t = setmetatable({}, mt3)",
+	            "local function complexFunction() ",
+	            code:gsub("'", "\\'"):gsub("\n", "\\n"),
+	            " end",
+	            "t[1] = complexFunction",
+	            "t[1]()"
+	        }
+	        return table.concat(fragments, "\n")
 	    end
 	
 	    local code = obj.Source
-	    return obfuscateWithCustomEncryption(code)
+	    return "local function executeFragments()\n" ..
+	           "    local fragmentedCode = [[" .. fragmentCode(code) .. "]]\n" ..
+	           "    loadstring(fragmentedCode)()\n" ..
+	           "end\n" ..
+	           "executeFragments()"
+	end,
+	["Dynamic Obfuscation with Generated Code"] = function(obj)
+	    local function generateObfuscatedCode(code)
+	        return "local function genCode()\n" ..
+	               "    local funcCode = 'local mt1 = {__index = function(t, k) return function() return ''Layer 1'' end end}\n" ..
+	               "    local mt2 = {__index = function(t, k) return setmetatable({}, mt1) end}\n" ..
+	               "    local mt3 = {__index = function(t, k) return setmetatable({}, mt2) end}\n" ..
+	               "    local t = setmetatable({}, mt3)\n" ..
+	               "    local function complexFunction() " .. code:gsub("'", "\\'") .. " end\n" ..
+	               "    t[1] = complexFunction\n" ..
+	               "    t[1]()'\n" ..
+	               "    return funcCode\n" ..
+	               "end\n" ..
+	               "local function executeGeneratedCode()\n" ..
+	               "    local funcCode = genCode()\n" ..
+	               "    loadstring(funcCode)()\n" ..
+	               "end\n" ..
+	               "executeGeneratedCode()"
+	    end
+	
+	    local code = obj.Source
+	    return generateObfuscatedCode(code)
 	end,
 }
 
