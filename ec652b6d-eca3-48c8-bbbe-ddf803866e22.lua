@@ -184,7 +184,6 @@ local commands = {
 	
 		return encodedCode
 	end,
-	
 	["String Obfuscation"] = function(obj)
 		local code = obj.Source
 	
@@ -204,7 +203,6 @@ local commands = {
 	
 		return obfuscatedCode
 	end,
-	
 	["Character Replacement"] = function(obj)
 		local code = obj.Source
 	
@@ -224,7 +222,6 @@ local commands = {
 	
 		return replacedCode
 	end,
-	
 	["String Splitting"] = function(obj)
 		local code = obj.Source
 	
@@ -249,7 +246,6 @@ local commands = {
 	
 		return obfuscatedCode
 	end,
-	
 }
 
 return commands
