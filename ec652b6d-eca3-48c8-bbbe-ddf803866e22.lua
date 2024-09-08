@@ -157,43 +157,94 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Loadstring Obfuscation"] = function(obj)
-		local function obfuscateWithLoadstring(code)
-			return "return loadstring(" .. string.format("%q", code) .. ")()"
-		end
-
-		local code = obj.Source
-		return obfuscateWithLoadstring(code)
-	end,
-	["Overloading Tables"] = function(obj)
-	    local function overloadTables(code)
-	        local funcTable = {
-	            ["originalFunction1"] = function() return "Obfuscated Function 1" end,
-	            ["originalFunction2"] = function() return "Obfuscated Function 2" end,
-	        }
-	        return code:gsub("originalFunction[%d]", function(funcName)
-	            return 'funcTable["' .. funcName .. '"]()'
-	        end)
+	["Code Generation"] = function(obj)
+	    local function generateCode(code)
+	        return "local function generate() return function() " .. code .. " end end\n" ..
+	               "local func = generate()\nfunc()"
 	    end
 	
 	    local code = obj.Source
-	    return overloadTables(code)
+	    return generateCode(code)
 	end,
-	["Non-standard Libraries"] = function(obj)
-	    local function useCustomLibs(code)
-	        return "local myLib = {}" .. code:gsub("print", "myLib.customPrint")
+	["Complex Data Structures"] = function(obj)
+	    local function obfuscateWithComplexStructures(code)
+	        return "local data = {\n" ..
+	               "    ['key1'] = { 'nested1', 'nested2' },\n" ..
+	               "    ['key2'] = { ['innerKey'] = function() " .. code .. " end }\n" ..
+	               "}\n" ..
+	               "data['key2']['innerKey']()"
 	    end
 	
 	    local code = obj.Source
-	    return useCustomLibs(code)
+	    return obfuscateWithComplexStructures(code)
 	end,
-	["Inline Assembly"] = function(obj)
-	    local function inlineAssembly(code)
-	        return "local function asm() " .. code .. " end asm()"
+	["Indirect Function Calls"] = function(obj)
+	    local function obfuscateWithIndirectCalls(code)
+	        return "local funcTable = { func1 = function() " .. code .. " end }\n" ..
+	               "local function callIndirect() funcTable['func1']() end\n" ..
+	               "callIndirect()"
 	    end
 	
 	    local code = obj.Source
-	    return inlineAssembly(code)
+	    return obfuscateWithIndirectCalls(code)
+	end,
+	["String Encryption with Metatables"] = function(obj)
+	    local function encrypt(str)
+	        local key = 5
+	        return (str:gsub('.', function(c)
+	            return string.char(((string.byte(c) - 32 + key) % 95) + 32)
+	        end))
+	    end
+	
+	    local function decrypt(str)
+	        local key = 5
+	        return (str:gsub('.', function(c)
+	            return string.char(((string.byte(c) - 32 - key + 95) % 95) + 32)
+	        end))
+	    end
+	
+	    local function obfuscateWithEncryption(code)
+	        local encryptedCode = encrypt(code)
+	        return string.format(
+	            "local mt = {__index = function(t, k) return function() return %s end end}\n" ..
+	            "local t = setmetatable({}, mt)\nlocal function decryptedCode() return %s end\n" ..
+	            "loadstring(decryptedCode())()",
+	            encryptedCode, encryptedCode
+	        )
+	    end
+	
+	    local code = obj.Source
+	    return obfuscateWithEncryption(code)
+	end,
+	["Randomized Tables"] = function(obj)
+	    local function obfuscateWithRandomTables(code)
+	        local tableName = "data" .. math.random(1000, 9999)
+	        local randomTable = "{"
+	        for i = 1, 10 do
+	            randomTable = randomTable .. string.format('["%d"] = "%s", ', i, math.random(1, 100))
+	        end
+	        randomTable = randomTable .. "}"
+	
+	        return string.format(
+	            "local %s = %s\nlocal function accessTable(key) return %s[key] end\n" ..
+	            "local function originalFunc() %s end\noriginalFunc()",
+	            tableName, randomTable, tableName, code
+	        )
+	    end
+	
+	    local code = obj.Source
+	    return obfuscateWithRandomTables(code)
+	end,
+	["Metatable Obfuscation"] = function(obj)
+	    local function obfuscateWithMetatables(code)
+	        return "local mt = {__index = function(t, k) return function() return 'obfuscated' end end}\n" ..
+	               "local t = setmetatable({}, mt)\n" ..
+	               "local function originalFunc() " .. code .. " end\n" ..
+	               "originalFunc()"
+	    end
+	
+	    local code = obj.Source
+	    return obfuscateWithMetatables(code)
 	end,
 }
 
