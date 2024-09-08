@@ -189,7 +189,6 @@ local commands = {
 		
 		return encodedCode
 	end,
-	
 	["String Obfuscation"] = function(obj)
 		local code = obj.Source
 	
