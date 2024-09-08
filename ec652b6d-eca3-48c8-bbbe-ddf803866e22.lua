@@ -157,196 +157,62 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Code Generation"] = function(obj)
-	    local function generateCode(code)
-	        return "local function generate() return function() " .. code .. " end end\n" ..
-	               "local func = generate()\nfunc()"
+	["Complex Nested Metatables"] = function(obj)
+	    local function obfuscateWithNestedMetatables(code)
+	        return "local mt1 = {__index = function(t, k) return function() return 'Layer 1' end end}\n" ..
+	               "local mt2 = {__index = function(t, k) return setmetatable({}, mt1) end}\n" ..
+	               "local mt3 = {__index = function(t, k) return setmetatable({}, mt2) end}\n" ..
+	               "local t = setmetatable({}, mt3)\n" ..
+	               "local function complexFunction() " .. code .. " end\n" ..
+	               "t[1] = complexFunction\n" ..
+	               "t[1]()"
 	    end
 	
 	    local code = obj.Source
-	    return generateCode(code)
+	    return obfuscateWithNestedMetatables(code)
 	end,
-	["Complex Data Structures"] = function(obj)
-	    local function obfuscateWithComplexStructures(code)
-	        return "local data = {\n" ..
-	               "    ['key1'] = { 'nested1', 'nested2' },\n" ..
-	               "    ['key2'] = { ['innerKey'] = function() " .. code .. " end }\n" ..
-	               "}\n" ..
-	               "data['key2']['innerKey']()"
+	["Dynamic Code Generation with Obfuscated Templates"] = function(obj)
+	    local function generateObfuscatedCode(code)
+	        local functionTemplate = "local function generatedFunction() %s end\n" ..
+	                                 "local function executor() return generatedFunction() end\n" ..
+	                                 "executor()"
+	        return string.format(functionTemplate, code)
 	    end
 	
 	    local code = obj.Source
-	    return obfuscateWithComplexStructures(code)
+	    return "local codeTemplate = [[\n" .. generateObfuscatedCode(code) .. "\n]]\n" ..
+	           "loadstring(codeTemplate)()"
 	end,
-	["Indirect Function Calls"] = function(obj)
-	    local function obfuscateWithIndirectCalls(code)
-	        return "local funcTable = { func1 = function() " .. code .. " end }\n" ..
-	               "local function callIndirect() funcTable['func1']() end\n" ..
-	               "callIndirect()"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithIndirectCalls(code)
-	end,
-	["String Encryption with Metatables"] = function(obj)
-	    local function encrypt(str)
-	        local key = 5
-	        return (str:gsub('.', function(c)
+	["Custom Encryption/Decryption"] = function(obj)
+	    local function customEncrypt(code)
+	        local key = 11
+	        return (code:gsub('.', function(c)
 	            return string.char(((string.byte(c) - 32 + key) % 95) + 32)
 	        end))
 	    end
 	
-	    local function decrypt(str)
-	        local key = 5
-	        return (str:gsub('.', function(c)
+	    local function customDecrypt(encryptedCode)
+	        local key = 11
+	        return (encryptedCode:gsub('.', function(c)
 	            return string.char(((string.byte(c) - 32 - key + 95) % 95) + 32)
 	        end))
 	    end
 	
-	    local function obfuscateWithEncryption(code)
-	        local encryptedCode = encrypt(code)
-	        return string.format(
-	            "local mt = {__index = function(t, k) return function() return %s end end}\n" ..
-	            "local t = setmetatable({}, mt)\nlocal function decryptedCode() return %s end\n" ..
-	            "loadstring(decryptedCode())()",
-	            encryptedCode, encryptedCode
-	        )
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithEncryption(code)
-	end,
-	["Randomized Tables"] = function(obj)
-	    local function obfuscateWithRandomTables(code)
-	        local tableName = "data" .. math.random(1000, 9999)
-	        local randomTable = "{"
-	        for i = 1, 10 do
-	            randomTable = randomTable .. string.format('["%d"] = "%s", ', i, math.random(1, 100))
-	        end
-	        randomTable = randomTable .. "}"
-	
-	        return string.format(
-	            "local %s = %s\nlocal function accessTable(key) return %s[key] end\n" ..
-	            "local function originalFunc() %s end\noriginalFunc()",
-	            tableName, randomTable, tableName, code
-	        )
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithRandomTables(code)
-	end,
-	["Metatable Obfuscation"] = function(obj)
-	    local function obfuscateWithMetatables(code)
-	        return "local mt = {__index = function(t, k) return function() return 'obfuscated' end end}\n" ..
-	               "local t = setmetatable({}, mt)\n" ..
-	               "local function originalFunc() " .. code .. " end\n" ..
-	               "originalFunc()"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithMetatables(code)
-	end,
-	["Fake Function Definitions"] = function(obj)
-	    local function obfuscateWithFakeFunctions(code)
-	        return "local function fakeFunc1() end\n" ..
-	               "local function fakeFunc2() end\n" ..
-	               "local function realFunc() " .. code .. " end\n" ..
-	               "realFunc()"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithFakeFunctions(code)
-	end,
-	["String Concatenation Obfuscation"] = function(obj)
-	    local function obfuscateStringConcatenation(code)
-	        return code:gsub('"[^"]+"', function(str)
-	            return '"' .. str:sub(2, -2):gsub('.', function(c)
-	                return '\\' .. string.byte(c)
-	            end) .. '"'
-	        end)
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateStringConcatenation(code)
-	end,
-	["Variable Obfuscation through Indexing"] = function(obj)
-	    local function obfuscateWithIndexing(code)
-	        return "local vars = { a = 1, b = 2 }\n" ..
-	               "local function useVar() return vars['a'] end\n" ..
-	               "print(useVar())"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithIndexing(code)
-	end,
-	["Control Flow Obfuscation"] = function(obj)
-	    local function obfuscateControlFlow(code)
-	        return "local function obfuscatedFlow()\n" ..
-	               "if true then\n" ..
-	               "    " .. code .. "\n" ..
-	               "else\n" ..
-	               "    print('This will never be printed')\n" ..
+	    local function obfuscateWithCustomEncryption(code)
+	        local encryptedCode = customEncrypt(code)
+	        return "local function decrypt(enc)\n" ..
+	               "    local key = 11\n" ..
+	               "    return (enc:gsub('.', function(c)\n" ..
+	               "        return string.char(((string.byte(c) - 32 - key + 95) % 95) + 32)\n" ..
+	               "    end))\n" ..
 	               "end\n" ..
-	               "obfuscatedFlow()"
+	               "local encryptedCode = [[" .. encryptedCode .. "]]\n" ..
+	               "local decryptedCode = decrypt(encryptedCode)\n" ..
+	               "loadstring(decryptedCode)()"
 	    end
 	
 	    local code = obj.Source
-	    return obfuscateControlFlow(code)
-	end,
-	["Code Injection via Metatables"] = function(obj)
-	    local function obfuscateWithInjection(code)
-	        return "local mt = {__index = function(t, k) " .. code .. " end}\n" ..
-	               "local t = setmetatable({}, mt)\n" ..
-	               "local function run() t['anyKey'] end\n" ..
-	               "run()"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithInjection(code)
-	end,
-	["Dynamic Variable Assignment"] = function(obj)
-	    local function obfuscateWithDynamicAssignment(code)
-	        return "local function dynamicAssign() " ..
-	               "local a = loadstring('return 1')() " ..
-	               "local b = loadstring('return 2')() " ..
-	               "return a + b end\n" ..
-	               "local result = dynamicAssign()\n" ..
-	               "print(result)"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithDynamicAssignment(code)
-	end,
-	["Function Name Mangling"] = function(obj)
-	    local function obfuscateWithNameMangling(code)
-	        return "local function mangledName() " .. code .. " end\n" ..
-	               "local function getFunction() return mangledName end\n" ..
-	               "getFunction()()"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithNameMangling(code)
-	end,
-	["Obfuscated Table Access"] = function(obj)
-	    local function obfuscateTableAccess(code)
-	        return "local tbl = {}\n" ..
-	               "tbl[1] = function() " .. code .. " end\n" ..
-	               "local function accessTable() return tbl[1]() end\n" ..
-	               "accessTable()"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateTableAccess(code)
-	end,
-	["Function Proxying"] = function(obj)
-	    local function obfuscateWithProxies(code)
-	        return "local function proxyFunction() " .. code .. " end\n" ..
-	               "local function mainFunction() return proxyFunction() end\n" ..
-	               "mainFunction()"
-	    end
-	
-	    local code = obj.Source
-	    return obfuscateWithProxies(code)
+	    return obfuscateWithCustomEncryption(code)
 	end,
 }
 
