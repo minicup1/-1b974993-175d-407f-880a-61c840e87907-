@@ -157,6 +157,49 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
+	["Beautify Code"] = function(obj)
+	    local code = obj.Source
+	
+	    local function beautifyCode(code)
+	        -- Remove leading/trailing spaces
+	        code = code:gsub("^%s+", "") 
+	        code = code:gsub("%s+$", "")
+	
+	        -- Ensure there is exactly one space around operators and keywords
+	        code = code:gsub("([%+%-%*/=%%<>])", " %1 ")
+	        code = code:gsub("%s+", " ")  -- Normalize multiple spaces into one
+	
+	        -- Add new lines after certain keywords or symbols
+	        code = code:gsub("(%b{})", function(block)
+	            return block:gsub(";?", ";\n"):gsub("%s*{", " {\n"):gsub("}%s*", "\n}\n")
+	        end)
+	
+	        code = code:gsub("(%b[])", function(block)
+	            return block:gsub(";", ";\n"):gsub("%s*%[", " [\n"):gsub("]%s*", "\n]\n")
+	        end)
+	
+	        -- Add proper indentation based on the curly brackets and other block structures
+	        local indent = 0
+	        local beautifiedCode = code:gsub("[^\r\n]+", function(line)
+	            if line:find("}") then
+	                indent = indent - 1
+	            end
+	
+	            local formattedLine = string.rep("    ", indent) .. line
+	            if line:find("{") then
+	                indent = indent + 1
+	            end
+	
+	            return formattedLine
+	        end)
+	
+	        return beautifiedCode
+	    end
+	
+	    local beautifiedCode = beautifyCode(code)
+	
+	    return beautifiedCode
+	end,
 }
 
 return commands
