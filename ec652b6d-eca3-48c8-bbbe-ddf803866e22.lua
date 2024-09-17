@@ -171,34 +171,32 @@ local commands = {
 	        code = code:gsub("(%a)%s*([=<>~])%s*([=])", "%1 %2%3 ") -- handles combined operators like ==, >=, <=, etc.
 	        code = code:gsub("%s+", " ") -- Normalize multiple spaces into one
 	
-	        -- Add new lines after certain keywords or symbols
+	        -- Add line breaks after key statements
 	        code = code:gsub("([;{}])", "%1\n") -- Ensure ;, {, and } are followed by new lines
-	        code = code:gsub("(%b())", function(parens) -- Ensure new lines for anonymous functions
-	            return parens:gsub(",", ", ")
-	        end)
 	
-	        -- Add new lines after the appropriate keywords
+	        -- Safely add new lines after the specified keywords, avoiding inline breaks
 	        local lineBreakKeywords = {
-	            "then", "end", "return", "break", "do", "end%)" -- Add ) for handling 'end)' cases
+	            "then", "end", "do", "break", "end%)"
 	        }
 	
 	        for _, keyword in ipairs(lineBreakKeywords) do
-	            -- Ensure keyword is followed by a new line, but not after keywords like 'if'
+	            -- Only add new line if the keyword is not part of an inline statement
 	            code = code:gsub("%f[%a]"..keyword.."%f[%A]", keyword .. "\n")
 	        end
+	
+	        -- Handle special cases like 'return' or 'print' properly, ensuring they're not split unnecessarily
+	        code = code:gsub("return%s+", "return ") -- Keep 'return' on the same line if it's inline
+	        code = code:gsub("print%s*%(", "print(") -- Keep 'print' function inline with its argument
 	
 	        -- Fix indentation based on blocks (handling "do", "then", "end", etc.)
 	        local indent = 0
 	        local beautifiedCode = code:gsub("[^\r\n]+", function(line)
-	            -- Decrease indentation on 'end' or '}' or 'end)'
 	            if line:find("end") or line:find("}") or line:find("end%)") then
 	                indent = indent - 1
 	            end
 	
-	            -- Apply indentation
 	            local formattedLine = string.rep("    ", indent) .. line
 	
-	            -- Increase indentation on 'do', 'then', or '{'
 	            if line:find("do") or line:find("then") or line:find("{") then
 	                indent = indent + 1
 	            end
