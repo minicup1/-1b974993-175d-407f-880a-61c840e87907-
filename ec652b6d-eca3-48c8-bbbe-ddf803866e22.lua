@@ -157,7 +157,7 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Beautify Code"] = function(obj)
+	["Beautify Code edited"] = function(obj)
 	    local code = obj.Source
 	
 	    local function beautifyCode(code)
@@ -171,22 +171,25 @@ local commands = {
 	        code = code:gsub("(%a)%s*([=<>~])%s*([=])", "%1 %2%3 ") -- handles combined operators like ==, >=, <=, etc.
 	        code = code:gsub("%s+", " ") -- Normalize multiple spaces into one
 	
-	        -- Add line breaks after key statements
+	        -- Add new lines after key statements
 	        code = code:gsub("([;{}])", "%1\n") -- Ensure ;, {, and } are followed by new lines
 	
-	        -- Safely add new lines after the specified keywords, avoiding inline breaks
+	        -- Add new lines after appropriate keywords without breaking inline blocks
 	        local lineBreakKeywords = {
-	            "then", "end", "do", "break", "end%)"
+	            "then", "do", "break", "else", "elseif", "end", "end%)"
 	        }
 	
 	        for _, keyword in ipairs(lineBreakKeywords) do
-	            -- Only add new line if the keyword is not part of an inline statement
-	            code = code:gsub("%f[%a]"..keyword.."%f[%A]", keyword .. "\n")
+	            code = code:gsub("%f[%a]"..keyword.."%f[%A]", "\n" .. keyword .. "\n")
 	        end
 	
-	        -- Handle special cases like 'return' or 'print' properly, ensuring they're not split unnecessarily
-	        code = code:gsub("return%s+", "return ") -- Keep 'return' on the same line if it's inline
-	        code = code:gsub("print%s*%(", "print(") -- Keep 'print' function inline with its argument
+	        -- Fix parentheses closing issues, keep 'end)' and function calls intact
+	        code = code:gsub("%)\n", ")") -- Keep function calls with parentheses intact
+	        code = code:gsub("\n([%)]%s*)", "%1") -- Keep `end)` or `)` on the same line as part of expressions
+	
+	        -- Ensure that 'return' is handled properly (keep it on its own line)
+	        code = code:gsub("return%s*(.-)\n", "return %1\n") -- Keep 'return' statements intact on their own line
+	        code = code:gsub("return%s+", "return ") -- Avoid breaking inline return statements
 	
 	        -- Fix indentation based on blocks (handling "do", "then", "end", etc.)
 	        local indent = 0
