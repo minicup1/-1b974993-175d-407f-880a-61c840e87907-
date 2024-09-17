@@ -171,29 +171,34 @@ local commands = {
 	        code = code:gsub("(%a)%s*([=<>~])%s*([=])", "%1 %2%3 ") -- handles combined operators like ==, >=, <=, etc.
 	        code = code:gsub("%s+", " ") -- Normalize multiple spaces into one
 	
-	        -- Add line breaks after key statements
+	        -- Add new lines after certain keywords or symbols
 	        code = code:gsub("([;{}])", "%1\n") -- Ensure ;, {, and } are followed by new lines
 	        code = code:gsub("(%b())", function(parens) -- Ensure new lines for anonymous functions
 	            return parens:gsub(",", ", ")
 	        end)
 	
-	        -- Add new lines for keywords
-	        local keywords = {
-	            "then", "end", "return", "break", "do", "end)",
+	        -- Add new lines after the appropriate keywords
+	        local lineBreakKeywords = {
+	            "then", "end", "return", "break", "do", "end%)" -- Add ) for handling 'end)' cases
 	        }
 	
-	        for _, keyword in ipairs(keywords) do
-	            code = code:gsub(keyword .. " ", "\n" .. keyword .. " ") -- Ensure keyword begins on a new line
+	        for _, keyword in ipairs(lineBreakKeywords) do
+	            -- Ensure keyword is followed by a new line, but not after keywords like 'if'
+	            code = code:gsub("%f[%a]"..keyword.."%f[%A]", keyword .. "\n")
 	        end
 	
-	        -- Fix indentation based on blocks (handling "end", "do", etc.)
+	        -- Fix indentation based on blocks (handling "do", "then", "end", etc.)
 	        local indent = 0
 	        local beautifiedCode = code:gsub("[^\r\n]+", function(line)
-	            if line:find("end") or line:find("}") then
+	            -- Decrease indentation on 'end' or '}' or 'end)'
+	            if line:find("end") or line:find("}") or line:find("end%)") then
 	                indent = indent - 1
 	            end
 	
+	            -- Apply indentation
 	            local formattedLine = string.rep("    ", indent) .. line
+	
+	            -- Increase indentation on 'do', 'then', or '{'
 	            if line:find("do") or line:find("then") or line:find("{") then
 	                indent = indent + 1
 	            end
