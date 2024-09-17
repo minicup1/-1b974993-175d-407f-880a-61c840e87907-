@@ -179,7 +179,7 @@ local commands = {
 	
 	        -- Add new lines for keywords
 	        local keywords = {
-	            "then", "end", "return", "break", 'do", "end)",
+	            "then", "end", "return", "break", "do", "end)",
 	        }
 	
 	        for _, keyword in ipairs(keywords) do
