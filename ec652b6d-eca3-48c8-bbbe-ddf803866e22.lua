@@ -157,38 +157,44 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Beautify Code EDITED"] = function(obj)
+	["Beautify Code"] = function(obj)
 	    local code = obj.Source
 	
 	    local function beautifyCode(code)
 	        -- Remove leading/trailing spaces
-	        code = code:gsub("^%s+", "") 
+	        code = code:gsub("^%s+", "")
 	        code = code:gsub("%s+$", "")
 	
 	        -- Ensure there is exactly one space around operators
 	        code = code:gsub("([%+%-%*/%%<>~!=])%s*", " %1 ") -- handles + - * / % < > ~ !=
 	        code = code:gsub("%s*([%+%-%*/%%<>~!=])", " %1 ") -- handles spacing before/after operators
 	        code = code:gsub("(%a)%s*([=<>~])%s*([=])", "%1 %2%3 ") -- handles combined operators like ==, >=, <=, etc.
-	        code = code:gsub("%s+", " ")  -- Normalize multiple spaces into one
+	        code = code:gsub("%s+", " ") -- Normalize multiple spaces into one
 	
-	        -- Add new lines after certain keywords or symbols
-	        code = code:gsub("(%b{})", function(block)
-	            return block:gsub(";?", ";\n"):gsub("%s*{", " {\n"):gsub("}%s*", "\n}\n")
+	        -- Add line breaks after key statements
+	        code = code:gsub("([;{}])", "%1\n") -- Ensure ;, {, and } are followed by new lines
+	        code = code:gsub("(%b())", function(parens) -- Ensure new lines for anonymous functions
+	            return parens:gsub(",", ", ")
 	        end)
 	
-	        code = code:gsub("(%b[])", function(block)
-	            return block:gsub(";", ";\n"):gsub("%s*%[", " [\n"):gsub("]%s*", "\n]\n")
-	        end)
+	        -- Add new lines for keywords
+	        local keywords = {
+	            "then", "end", "return", "break", 'do", ")"
+	        }
 	
-	        -- Add proper indentation based on the curly brackets and other block structures
+	        for _, keyword in ipairs(keywords) do
+	            code = code:gsub(keyword .. " ", "\n" .. keyword .. " ") -- Ensure keyword begins on a new line
+	        end
+	
+	        -- Fix indentation based on blocks (handling "end", "do", etc.)
 	        local indent = 0
 	        local beautifiedCode = code:gsub("[^\r\n]+", function(line)
-	            if line:find("}") then
+	            if line:find("end") or line:find("}") then
 	                indent = indent - 1
 	            end
 	
 	            local formattedLine = string.rep("    ", indent) .. line
-	            if line:find("{") then
+	            if line:find("do") or line:find("then") or line:find("{") then
 	                indent = indent + 1
 	            end
 	
