@@ -157,7 +157,7 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Beautify Code"] = function(obj)
+	["Beautify Code EDITED"] = function(obj)
 	    local code = obj.Source
 	
 	    local function beautifyCode(code)
@@ -165,8 +165,10 @@ local commands = {
 	        code = code:gsub("^%s+", "") 
 	        code = code:gsub("%s+$", "")
 	
-	        -- Ensure there is exactly one space around operators and keywords
-	        code = code:gsub("([%+%-%*/=%%<>])", " %1 ")
+	        -- Ensure there is exactly one space around operators
+	        code = code:gsub("([%+%-%*/%%<>~!=])%s*", " %1 ") -- handles + - * / % < > ~ !=
+	        code = code:gsub("%s*([%+%-%*/%%<>~!=])", " %1 ") -- handles spacing before/after operators
+	        code = code:gsub("(%a)%s*([=<>~])%s*([=])", "%1 %2%3 ") -- handles combined operators like ==, >=, <=, etc.
 	        code = code:gsub("%s+", " ")  -- Normalize multiple spaces into one
 	
 	        -- Add new lines after certain keywords or symbols
