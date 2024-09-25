@@ -157,7 +157,7 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Obfuscate Code"] = function(obj)
+	["AAAAAAAA"] = function(obj)
 	    local code = obj.Source
 	    local a = {id = nil}
 	
