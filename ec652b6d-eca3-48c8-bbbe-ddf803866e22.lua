@@ -157,7 +157,7 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["AAAAAAAA"] = function(obj)
+	["BBBBBBBBBBBBBBB"] = function(obj)
 	    local code = obj.Source
 	    local a = {id = nil}
 	
