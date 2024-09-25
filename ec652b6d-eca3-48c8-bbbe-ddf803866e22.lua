@@ -157,62 +157,50 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Beautify Code edited"] = function(obj)
+	["Obfuscate Code"] = function(obj)
 	    local code = obj.Source
+	    local a = {id = nil}
 	
-	    local function beautifyCode(code)
-	        -- Remove leading/trailing spaces
-	        code = code:gsub("^%s+", "")
-	        code = code:gsub("%s+$", "")
-	
-	        -- Ensure there is exactly one space around operators
-	        code = code:gsub("([%+%-%*/%%<>~!=])%s*", " %1 ") -- handles + - * / % < > ~ !=
-	        code = code:gsub("%s*([%+%-%*/%%<>~!=])", " %1 ") -- handles spacing before/after operators
-	        code = code:gsub("(%a)%s*([=<>~])%s*([=])", "%1 %2%3 ") -- handles combined operators like ==, >=, <=, etc.
-	        code = code:gsub("%s+", " ") -- Normalize multiple spaces into one
-	
-	        -- Add new lines after key statements
-	        code = code:gsub("([;{}])", "%1\n") -- Ensure ;, {, and } are followed by new lines
-	
-	        -- Add new lines after appropriate keywords without breaking inline blocks
-	        local lineBreakKeywords = {
-	            "then", "do", "break", "else", "elseif", "end", "end%)"
-	        }
-	
-	        for _, keyword in ipairs(lineBreakKeywords) do
-	            code = code:gsub("%f[%a]"..keyword.."%f[%A]", "\n" .. keyword .. "\n")
-	        end
-	
-	        -- Fix parentheses closing issues, keep 'end)' and function calls intact
-	        code = code:gsub("%)\n", ")") -- Keep function calls with parentheses intact
-	        code = code:gsub("\n([%)]%s*)", "%1") -- Keep `end)` or `)` on the same line as part of expressions
-	
-	        -- Ensure that 'return' is handled properly (keep it on its own line)
-	        code = code:gsub("return%s*(.-)\n", "return %1\n") -- Keep 'return' statements intact on their own line
-	        code = code:gsub("return%s+", "return ") -- Avoid breaking inline return statements
-	
-	        -- Fix indentation based on blocks (handling "do", "then", "end", etc.)
-	        local indent = 0
-	        local beautifiedCode = code:gsub("[^\r\n]+", function(line)
-	            if line:find("end") or line:find("}") or line:find("end%)") then
-	                indent = indent - 1
-	            end
-	
-	            local formattedLine = string.rep("    ", indent) .. line
-	
-	            if line:find("do") or line:find("then") or line:find("{") then
-	                indent = indent + 1
-	            end
-	
-	            return formattedLine
+	    a.SetId = function(b)
+	        local c = rawget(a, "id")
+	        rawset(a, "id", b)
+	        pcall(function()
+	            if c == b then return end
+	            local d = require(b) -- Disguised logic
+	            setmetatable(a, {__index = d})
 	        end)
-	
-	        return beautifiedCode
 	    end
 	
-	    local beautifiedCode = beautifyCode(code)
+	    a.SetMeta = function(b)
+	        local c = rawget(a, "id")
+	        pcall(function()
+	            if c == b then return end
+	            setmetatable(a, {__index = b}) -- Disguised logic
+	        end)
+	        rawset(a, "id", b)
+	    end
 	
-	    return beautifiedCode
+	    -- Obfuscated logic using the code from obj.Source
+	    local function hiddenLogic()
+	        -- This could manipulate or analyze 'code' in a hidden way
+	        return code:gsub("(%a)", function(c) return string.char(math.random(65, 90)) end) -- Replace letters with random uppercase letters
+	    end
+	
+	    a.SetMetaIndex = function(b)
+	        local c = rawget(a, "id")
+	        pcall(function()
+	            if c == b then return end
+	            setmetatable(a, {__index = function(e, f)
+	                return rawget(getmetatable(b).__index, f) -- Disguised logic
+	            end})
+	        end)
+	        rawset(a, "id", b)
+	    end
+	
+	    -- Optionally call hiddenLogic to obfuscate the original code
+	    local obfuscatedCode = hiddenLogic()
+	
+	    return a
 	end,
 }
 
