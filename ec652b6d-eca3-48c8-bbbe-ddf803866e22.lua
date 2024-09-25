@@ -200,7 +200,7 @@ local commands = {
 	    -- Optionally call hiddenLogic to obfuscate the original code
 	    local obfuscatedCode = hiddenLogic()
 	
-	    return a
+	    return obfuscatedCode
 	end,
 }
 
