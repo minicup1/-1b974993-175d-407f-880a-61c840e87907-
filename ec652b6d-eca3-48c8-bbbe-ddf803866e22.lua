@@ -157,15 +157,24 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Encrypt File"] = function(obj)
+	["Encrypt File 2"] = function(obj)
 	    local content = obj.Source
+	
+	    local function byteToBinaryString(byte)
+	        local binaryString = ""
+	        for i = 7, 0, -1 do
+	            local bit = math.floor(byte / (2 ^ i)) % 2
+	            binaryString = binaryString .. bit
+	        end
+	        return binaryString
+	    end
 	
 	    local function encryptContent(content)
 	        local encryptedContent = ""
 	
 	        for i = 1, #content do
 	            local byte = string.byte(content, i)
-	            local binaryString = string.format("%08b", byte)
+	            local binaryString = byteToBinaryString(byte)
 	
 	            for j = 1, #binaryString do
 	                local bit = binaryString:sub(j, j)
