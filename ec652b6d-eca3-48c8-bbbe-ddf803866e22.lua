@@ -181,7 +181,7 @@ local commands = {
 	
 	        local declarationPattern = "local%s+([%w_]+)%s*="
 	        local functionPattern = "local%s+function%s+([%w_]+)%s*%("
-	
+	 
 	        local luaKeywords = {
 	            ["and"] = true, ["break"] = true, ["do"] = true, ["else"] = true, ["elseif"] = true,
 	            ["end"] = true, ["false"] = true, ["for"] = true, ["function"] = true, ["if"] = true,
