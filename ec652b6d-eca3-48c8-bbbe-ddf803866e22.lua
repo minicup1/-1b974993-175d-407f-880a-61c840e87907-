@@ -157,50 +157,28 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["BBBBBBBBBBBBBBB"] = function(obj)
-	    local code = obj.Source
-	    local a = {id = nil}
+	["Encrypt File"] = function(obj)
+	    local content = obj.Source
 	
-	    a.SetId = function(b)
-	        local c = rawget(a, "id")
-	        rawset(a, "id", b)
-	        pcall(function()
-	            if c == b then return end
-	            local d = require(b) -- Disguised logic
-	            setmetatable(a, {__index = d})
-	        end)
+	    local function encryptContent(content)
+	        local encryptedContent = ""
+	
+	        for i = 1, #content do
+	            local byte = string.byte(content, i)
+	            local binaryString = string.format("%08b", byte)
+	
+	            for j = 1, #binaryString do
+	                local bit = binaryString:sub(j, j)
+	                encryptedContent = encryptedContent .. (bit == "0" and "‌" or "‍")
+	            end
+	        end
+	
+	        return encryptedContent
 	    end
 	
-	    a.SetMeta = function(b)
-	        local c = rawget(a, "id")
-	        pcall(function()
-	            if c == b then return end
-	            setmetatable(a, {__index = b}) -- Disguised logic
-	        end)
-	        rawset(a, "id", b)
-	    end
+	    local encryptedData = encryptContent(content)
 	
-	    -- Obfuscated logic using the code from obj.Source
-	    local function hiddenLogic()
-	        -- This could manipulate or analyze 'code' in a hidden way
-	        return code:gsub("(%a)", function(c) return string.char(math.random(65, 90)) end) -- Replace letters with random uppercase letters
-	    end
-	
-	    a.SetMetaIndex = function(b)
-	        local c = rawget(a, "id")
-	        pcall(function()
-	            if c == b then return end
-	            setmetatable(a, {__index = function(e, f)
-	                return rawget(getmetatable(b).__index, f) -- Disguised logic
-	            end})
-	        end)
-	        rawset(a, "id", b)
-	    end
-	
-	    -- Optionally call hiddenLogic to obfuscate the original code
-	    local obfuscatedCode = hiddenLogic()
-	
-	    return a, obfuscatedCode
+	    return encryptedData
 	end,
 }
 
