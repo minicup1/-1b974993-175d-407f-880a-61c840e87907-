@@ -157,37 +157,80 @@ local commands = {
 		return [[-- CLICK FORMAT SELECTION IN SCRIPT SECTION AND FORMAT DOCUMENT
 		]]..codeWithoutComments
 	end,
-	["Encrypt File 2"] = function(obj)
-	    local content = obj.Source
+	["Obfuscate Code"] = function(obj)
+	    local code = obj.Source
 	
-	    local function byteToBinaryString(byte)
-	        local binaryString = ""
-	        for i = 7, 0, -1 do
-	            local bit = math.floor(byte / (2 ^ i)) % 2
-	            binaryString = binaryString .. bit
+	    local function encodeString(str)
+	        local encoded = {}
+	        for i = 1, #str do
+	            local char = string.byte(str, i)
+	            local obfuscatedChar = (char + 5) % 256  -- Shift ASCII values by 5 for obfuscation
+	            table.insert(encoded, "\\" .. obfuscatedChar)
 	        end
-	        return binaryString
+	        return table.concat(encoded)
 	    end
 	
-	    local function encryptContent(content)
-	        local encryptedContent = ""
+	    local function renameVariables(code)
+	        local varMap = {}
+	        local varCounter = 0
 	
-	        for i = 1, #content do
-	            local byte = string.byte(content, i)
-	            local binaryString = byteToBinaryString(byte)
+	        local function generateVarName()
+	            varCounter = varCounter + 1
+	            return "v" .. varCounter
+	        end
 	
-	            for j = 1, #binaryString do
-	                local bit = binaryString:sub(j, j)
-	                encryptedContent = encryptedContent .. (bit == "0" and "‌" or "‍")
+	        local declarationPattern = "local%s+([%w_]+)%s*="
+	        local functionPattern = "local%s+function%s+([%w_]+)%s*%("
+	
+	        local luaKeywords = {
+	            ["and"] = true, ["break"] = true, ["do"] = true, ["else"] = true, ["elseif"] = true,
+	            ["end"] = true, ["false"] = true, ["for"] = true, ["function"] = true, ["if"] = true,
+	            ["in"] = true, ["local"] = true, ["nil"] = true, ["not"] = true, ["or"] = true,
+	            ["repeat"] = true, ["return"] = true, ["then"] = true, ["true"] = true, ["until"] = true,
+	            ["while"] = true
+	        }
+	
+	        for varName in code:gmatch(declarationPattern) do
+	            if not varMap[varName] and not luaKeywords[varName] then
+	                varMap[varName] = generateVarName()
 	            end
 	        end
 	
-	        return encryptedContent
+	        for funcName in code:gmatch(functionPattern) do
+	            if not varMap[funcName] and not luaKeywords[funcName] then
+	                varMap[funcName] = generateVarName()
+	            end
+	        end
+	
+	        code = code:gsub("([%w_]+)", function(name)
+	            return varMap[name] or name
+	        end)
+	
+	        return code
 	    end
 	
-	    local encryptedData = encryptContent(content)
+	    local function insertDummyCode(code)
+	        local dummyCode = [[
+	            local _unusedVar = math.random(1, 100) * 3
+	            if _unusedVar > 150 then
+	                print("Debugging statement")
+	            end
+	        ]]
+	        return dummyCode .. code .. dummyCode
+	    end
 	
-	    return encryptedData
+	    -- Step 1: Rename variables to obscure names
+	    local obfuscatedCode = renameVariables(code)
+	
+	    -- Step 2: Encode strings in the code
+	    obfuscatedCode = obfuscatedCode:gsub('"(.-)"', function(str)
+	        return '"' .. encodeString(str) .. '"'
+	    end)
+	
+	    -- Step 3: Insert dummy code to add confusion
+	    obfuscatedCode = insertDummyCode(obfuscatedCode)
+	
+	    return obfuscatedCode
 	end,
 }
 
